@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'idarcAction.dart';
+import 'idarc_action.dart';
 
 void main() {
   runApp(const FanDrac());
@@ -36,17 +35,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int fanspeedpourcent = 50;
   List configuration = [];
+  String ip = "";
+  String user = "";
+  String password = "";
+
   var idracAction = IdracAction("192.168.1.1", "user", "password");
 
   Future<void> readJson() async {
     final String response =
-        await rootBundle.loadString('config/idarcConf.json');
+        await rootBundle.loadString('assets/config/idracConf.json');
     final data = await json.decode(response);
+
     setState(() {
-      configuration = data;
+      configuration = data["idrac_configuration"];
     });
-    idracAction =
-        IdracAction(configuration[0], configuration[1], configuration[2]);
+
+    ip = configuration[0]["ip"];
+    user = configuration[0]["user"];
+    password = configuration[0]["password"];
+
+    print("ip $ip user $user password $password");
   }
 
   void setFanSpeedAuto() {
@@ -71,14 +79,15 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text("$configuration"),
+            Text("Connected to $user@$ip"),
             ElevatedButton(
                 onPressed: setFanSpeedAuto, child: const Text("Auto")),
             ElevatedButton(
                 onPressed: setFanSpeedManu, child: const Text("Manu")),
             Text(
               "$fanspeedpourcent %",
-              style: TextStyle(fontSize: 40.0, fontWeight: FontWeight.w900),
+              style:
+                  const TextStyle(fontSize: 40.0, fontWeight: FontWeight.w900),
             ),
             Slider(
                 value: fanspeedpourcent.toDouble(),
