@@ -1,16 +1,20 @@
 # fandrac
 
-A new Flutter project.
+Fandrac is an opensource Flutter application to control the idrac interface of Dell servers.
 
-## Getting Started
+![image](https://user-images.githubusercontent.com/6849743/158486367-646c09fb-be47-490d-8472-b733c900ae13.png)
 
-This project is a starting point for a Flutter application.
+## Actual functionalities
 
-A few resources to get you started if this is your first Flutter project:
+- Controle of the fan speed
+- Configuration using json file (issue: #2)
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Future functionalities
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Stop/Start/Reboot server (issue: #3)
+- Monitoring temperatures (issue: #4)
+- Access to the console
+
+## Needs
+
+Ipmitools needs to be installed on the host, see https://github.com/ipmitool/ipmitool
