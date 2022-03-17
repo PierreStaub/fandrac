@@ -20,11 +20,19 @@ class _HomePageState extends State<HomePage> {
   late final IdracAction idracAction;
   late final Client _client;
   int _fanSpeedPercent = fanSpeedDefault;
+  bool _isLoading = false;
 
   @override
-  void initState() async {
-    _client = await _getClient();
-    idracAction = IdracAction(client: _client);
+  void initState() {
+    setState(() {
+      _isLoading = true;
+    });
+    _getClient().then(
+      (Client client) {
+        idracAction = IdracAction(client: _client);
+        _isLoading = false;
+      },
+    );
     super.initState();
   }
 
@@ -34,61 +42,66 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text("Connected to $_client"),
-            ElevatedButton(
-              onPressed: () {
-                idracAction.setFanMode(
-                  fanMode: FanMode.auto,
-                );
-              },
-              child: const Text(
-                "Auto",
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text("Connected to $_client"),
+                  ElevatedButton(
+                    onPressed: () {
+                      idracAction.setFanMode(
+                        fanMode: FanMode.auto,
+                      );
+                    },
+                    child: const Text(
+                      "Auto",
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      idracAction.setFanMode(
+                        fanMode: FanMode.manual,
+                      );
+                    },
+                    child: const Text(
+                      "Manual",
+                    ),
+                  ),
+                  Text(
+                    "$_fanSpeedPercent %",
+                    style: const TextStyle(
+                      fontSize: 40.0,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Slider(
+                    value: _fanSpeedPercent.toDouble(),
+                    min: 0,
+                    max: 100,
+                    divisions: 20,
+                    label: "$_fanSpeedPercent",
+                    onChanged: (double fanSpeed) {
+                      setState(() {
+                        _fanSpeedPercent = fanSpeed.round();
+                      });
+                    },
+                    onChangeEnd: (double fanSpeed) async {
+                      _fanSpeedPercent = fanSpeed.round();
+                      await idracAction.setFanMode(
+                        fanMode: FanMode.manual,
+                      );
+                      idracAction.setFanSpeed(
+                        fanSpeed: _fanSpeedPercent,
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                idracAction.setFanMode(
-                  fanMode: FanMode.manual,
-                );
-              },
-              child: const Text(
-                "Manual",
-              ),
-            ),
-            Text(
-              "$_fanSpeedPercent %",
-              style: const TextStyle(
-                fontSize: 40.0,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            Slider(
-                value: _fanSpeedPercent.toDouble(),
-                min: 0,
-                max: 100,
-                divisions: 20,
-                label: "$_fanSpeedPercent",
-                onChanged: (double fanSpeed) {
-                  setState(() {
-                    _fanSpeedPercent = fanSpeed.round();
-                  });
-                },
-                onChangeEnd: (double fanSpeed) async {
-                  _fanSpeedPercent = fanSpeed.round();
-                  await idracAction.setFanMode(
-                    fanMode: FanMode.manual,
-                  );
-                  idracAction.setFanSpeed(
-                    fanSpeed: _fanSpeedPercent,
-                  );
-                }),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _getClient,
         tooltip: 'Load json configuration',
