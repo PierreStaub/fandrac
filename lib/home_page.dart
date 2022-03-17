@@ -31,7 +31,9 @@ class _HomePageState extends State<HomePage> {
     _getClient().then(
       (Client client) {
         idracAction = IdracAction(client: _client);
-        _isLoading = false;
+        setState(() {
+          _isLoading = false;
+        });
       },
     );
     super.initState();
@@ -109,9 +111,6 @@ class _HomePageState extends State<HomePage> {
                         fanSpeed: _fanSpeedPercent,
                       );
                     },
-                    innerWidget: (double fanSpeed) => Text(
-                      'Speed $fanSpeed%',
-                    ),
                   ),
                   // Slider(
                   //   value: _fanSpeedPercent.toDouble(),
