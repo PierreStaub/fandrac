@@ -11,13 +11,6 @@ class Client {
 
   @override
   String toString() {
-    return '''
-          **************************************************
-          *  Client
-          *   IP = $ip 
-          *   LOGIN = $login 
-          *   PASSWORD = $password
-          **************************************************
-    ''';
+    return 'Conneced to $ip with user $login';
   }
 }

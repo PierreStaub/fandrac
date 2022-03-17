@@ -1,13 +1,6 @@
-import 'dart:convert';
-
-import 'package:fandrac/client.dart';
-import 'package:fandrac/constants.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:fandrac/fan_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:sleek_circular_slider/sleek_circular_slider.dart';
-
-import 'idarc_action.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required this.title}) : super(key: key);
@@ -18,164 +11,68 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final IdracAction idracAction;
-  late final Client _client;
-  int _fanSpeedPercent = fanSpeedDefault;
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    setState(() {
-      _isLoading = true;
-    });
-    _getClient().then(
-      (Client client) {
-        idracAction = IdracAction(client: _client);
-        setState(() {
-          _isLoading = false;
-        });
-      },
-    );
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    int? selectedMode;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text("Connected to $_client"),
-                  Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.all(10),
-                    child: CupertinoSlidingSegmentedControl<int>(
-                      backgroundColor: CupertinoColors.white,
-                      thumbColor: CupertinoColors.activeGreen,
-                      padding: const EdgeInsets.all(8),
-                      groupValue: selectedMode,
-                      children: {
-                        0: buildSegment("Auto"),
-                        1: buildSegment("Manual"),
-                      },
-                      onValueChanged: (int? selectedSegment) {
-                        setState(() {
-                          selectedMode = selectedSegment;
-                        });
-                        idracAction.setFanMode(
-                          fanMode: FanMode.values.firstWhere(
-                            (fanMode) {
-                              return fanMode.index == selectedSegment;
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 80,
-                  ),
-                  Text(
-                    "$_fanSpeedPercent %",
-                    style: const TextStyle(
-                      fontSize: 40.0,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  SleekCircularSlider(
-                    initialValue: _fanSpeedPercent.toDouble(),
-                    min: 0,
-                    max: 100,
-                    appearance: const CircularSliderAppearance(),
-                    onChange: (double fanSpeed) {
-                      setState(() {
-                        _fanSpeedPercent = fanSpeed.round();
-                      });
-                    },
-                    onChangeEnd: (double fanSpeed) async {
-                      _fanSpeedPercent = fanSpeed.round();
-                      await idracAction.setFanMode(
-                        fanMode: FanMode.manual,
-                      );
-                      idracAction.setFanSpeed(
-                        fanSpeed: _fanSpeedPercent,
-                      );
-                    },
-                  ),
-                  // Slider(
-                  //   value: _fanSpeedPercent.toDouble(),
-                  //   min: 0,
-                  //   max: 100,
-                  //   divisions: 20,
-                  //   label: "$_fanSpeedPercent",
-                  //   onChanged: (double fanSpeed) {
-                  //     setState(() {
-                  //       _fanSpeedPercent = fanSpeed.round();
-                  //     });
-                  //   },
-                  //   onChangeEnd: (double fanSpeed) async {
-                  //     _fanSpeedPercent = fanSpeed.round();
-                  //     await idracAction.setFanMode(
-                  //       fanMode: FanMode.manual,
-                  //     );
-                  //     idracAction.setFanSpeed(
-                  //       fanSpeed: _fanSpeedPercent,
-                  //     );
-                  //   },
-                  // ),
-                ],
-              ),
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _getClient,
-        tooltip: 'Load json configuration',
-        child: const Icon(
-          Icons.settings_rounded,
+      body: WindowBorder(
+        color: Color.fromARGB(255, 71, 125, 240),
+        width: 1,
+        child: Row(
+          children: [
+            RightSide(),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget buildSegment(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 22,
-        color: Colors.black,
-      ),
-    );
+const backgroundStartColor = Color.fromARGB(255, 66, 123, 247);
+const backgroundEndColor = Color.fromARGB(255, 53, 115, 248);
+
+class RightSide extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [backgroundStartColor, backgroundEndColor],
+                  stops: [0.0, 1.0]),
+            ),
+            child: Column(children: [
+              WindowTitleBarBox(child: Row(children: [Expanded(child: MoveWindow()), const WindowButtons()])),
+              const FanPage(title: 'TEST'),
+            ])));
   }
+}
 
-  Future<Client> _getClient() async {
-    final String _idracConfigurationJson = await rootBundle.loadString(
-      idracConfigurationAsset,
+final buttonColors = WindowButtonColors(
+    iconNormal: const Color(0xFF805306),
+    mouseOver: const Color(0xFFF6A00C),
+    mouseDown: const Color(0xFF805306),
+    iconMouseOver: const Color(0xFF805306),
+    iconMouseDown: const Color(0xFFFFD500));
+
+final closeButtonColors = WindowButtonColors(
+    mouseOver: const Color(0xFFD32F2F),
+    mouseDown: const Color(0xFFB71C1C),
+    iconNormal: const Color(0xFF805306),
+    iconMouseOver: Colors.white);
+
+class WindowButtons extends StatelessWidget {
+  const WindowButtons({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        MinimizeWindowButton(colors: buttonColors),
+        MaximizeWindowButton(colors: buttonColors),
+        CloseWindowButton(colors: closeButtonColors),
+      ],
     );
-    final idracConfiguration = await json.decode(_idracConfigurationJson);
-
-    final List _configuration = idracConfiguration["idrac_configuration"];
-
-    final String _ip = _configuration[0]["ip"] as String;
-    final String _login = _configuration[0]["user"] as String;
-    final String _password = _configuration[0]["password"] as String;
-
-    _client = Client(
-      ip: _ip,
-      login: _login,
-      password: _password,
-    );
-
-    print(_client);
-
-    return _client;
   }
 }
