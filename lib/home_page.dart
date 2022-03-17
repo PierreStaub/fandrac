@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:fandrac/client.dart';
 import 'package:fandrac/constants.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
@@ -18,7 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final IdracAction idracAction;
-  late Client _client;
+  late final Client _client;
   int _fanSpeedPercent = fanSpeedDefault;
   bool _isLoading = false;
 
@@ -30,9 +31,7 @@ class _HomePageState extends State<HomePage> {
     _getClient().then(
       (Client client) {
         idracAction = IdracAction(client: _client);
-        setState(() {
-          _isLoading = false;
-        });
+        _isLoading = false;
       },
     );
     super.initState();
@@ -40,6 +39,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    int? selectedMode;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -53,25 +54,34 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text("Connected to $_client"),
-                  ElevatedButton(
-                    onPressed: () {
-                      idracAction.setFanMode(
-                        fanMode: FanMode.auto,
-                      );
-                    },
-                    child: const Text(
-                      "Auto",
+                  Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(10),
+                    child: CupertinoSlidingSegmentedControl<int>(
+                      backgroundColor: CupertinoColors.white,
+                      thumbColor: CupertinoColors.activeGreen,
+                      padding: const EdgeInsets.all(8),
+                      groupValue: selectedMode,
+                      children: {
+                        0: buildSegment("Auto"),
+                        1: buildSegment("Manual"),
+                      },
+                      onValueChanged: (int? selectedSegment) {
+                        setState(() {
+                          selectedMode = selectedSegment;
+                        });
+                        idracAction.setFanMode(
+                          fanMode: FanMode.values.firstWhere(
+                            (fanMode) {
+                              return fanMode.index == selectedSegment;
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      idracAction.setFanMode(
-                        fanMode: FanMode.manual,
-                      );
-                    },
-                    child: const Text(
-                      "Manual",
-                    ),
+                  const SizedBox(
+                    height: 80,
                   ),
                   Text(
                     "$_fanSpeedPercent %",
@@ -80,13 +90,12 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  Slider(
-                    value: _fanSpeedPercent.toDouble(),
+                  SleekCircularSlider(
+                    initialValue: _fanSpeedPercent.toDouble(),
                     min: 0,
                     max: 100,
-                    divisions: 20,
-                    label: "$_fanSpeedPercent",
-                    onChanged: (double fanSpeed) {
+                    appearance: const CircularSliderAppearance(),
+                    onChange: (double fanSpeed) {
                       setState(() {
                         _fanSpeedPercent = fanSpeed.round();
                       });
@@ -100,7 +109,31 @@ class _HomePageState extends State<HomePage> {
                         fanSpeed: _fanSpeedPercent,
                       );
                     },
+                    innerWidget: (double fanSpeed) => Text(
+                      'Speed $fanSpeed%',
+                    ),
                   ),
+                  // Slider(
+                  //   value: _fanSpeedPercent.toDouble(),
+                  //   min: 0,
+                  //   max: 100,
+                  //   divisions: 20,
+                  //   label: "$_fanSpeedPercent",
+                  //   onChanged: (double fanSpeed) {
+                  //     setState(() {
+                  //       _fanSpeedPercent = fanSpeed.round();
+                  //     });
+                  //   },
+                  //   onChangeEnd: (double fanSpeed) async {
+                  //     _fanSpeedPercent = fanSpeed.round();
+                  //     await idracAction.setFanMode(
+                  //       fanMode: FanMode.manual,
+                  //     );
+                  //     idracAction.setFanSpeed(
+                  //       fanSpeed: _fanSpeedPercent,
+                  //     );
+                  //   },
+                  // ),
                 ],
               ),
             ),
@@ -110,6 +143,16 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(
           Icons.settings_rounded,
         ),
+      ),
+    );
+  }
+
+  Widget buildSegment(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 22,
+        color: Colors.black,
       ),
     );
   }
