@@ -18,7 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final IdracAction idracAction;
-  late final Client _client;
+  late Client _client;
   int _fanSpeedPercent = fanSpeedDefault;
   bool _isLoading = false;
 
