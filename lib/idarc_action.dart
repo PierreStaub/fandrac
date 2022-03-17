@@ -21,7 +21,7 @@ class IdracAction {
     final isFanModeAuto = fanMode == FanMode.auto;
 
     await _lShell.run(
-      'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H ${client.ip} -U ${client.login} -P \'${client.password}\' raw 0x30 0x30 0x0$isFanModeAuto',
+      'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H ${client.ip} -U ${client.login} -P \'${client.password}\' raw 0x30 0x30 0x01 0x0${isFanModeAuto ? 1 : 0}',
     );
   }
 
