@@ -1,44 +1,44 @@
+import 'package:fandrac/client.dart';
 import 'package:process_run/shell.dart';
 
+enum FanMode {
+  auto,
+  manual,
+}
+
 class IdracAction {
-  // global variables of the class
-  bool gbfanAutoMode = false;
-  String giactualSpeed = "";
-  String gpassword = "";
-  String gip = "";
-  String gUser = "";
-  String gPassword = "";
+  final Client client;
 
-  IdracAction(this.gip, this.gUser, this.gPassword) {
-    // Init of the IdracAction class
+  IdracAction({
+    required this.client,
+  });
+
+  final _lShell = Shell();
+
+  Future<void> setFanMode({
+    required FanMode fanMode,
+  }) async {
+    final isFanModeAuto = fanMode == FanMode.auto;
+
+    await _lShell.run(
+      'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H ${client.ip} -U ${client.login} -P \'${client.password}\' raw 0x30 0x30 0x0$isFanModeAuto',
+    );
   }
 
-  Future<int> setFanModeAuto(bool liMode) async {
-    int liResult = 0;
-    var lShell = Shell();
-    if (liMode) {
-      await lShell.run(
-          'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H $gip -U $gUser -P \'$gPassword\' raw 0x30 0x30 0x01 0x01');
-    } else {
-      await lShell.run(
-          'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H $gip -U $gUser -P \'$gPassword\' raw 0x30 0x30 0x01 0x00');
-    }
-    return liResult;
+  Future<void> setFanSpeed({
+    required int fanSpeed,
+  }) async {
+    final fanSpeedHexadecimal = fanSpeed.toRadixString(16);
+    return _setFanSpeed(
+      fanSpeed: fanSpeedHexadecimal,
+    );
   }
 
-  int setFanSpeed(int liSpeed) {
-    int liResult = 0;
-    giactualSpeed = liSpeed.toRadixString(16);
-    execIpmiCmd();
-    return liResult;
-  }
-
-  void execIpmiCmd() async {
-    var lShell = Shell();
-    String lidracCmd =
-        'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H $gip -U $gUser -P \'$gPassword\' raw 0x30 0x30 0x02 0xff 0x$giactualSpeed';
-    print(lidracCmd);
-    await lShell.run(
-        'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H $gip -U $gUser -P \'$gPassword\' raw 0x30 0x30 0x02 0xff 0x$giactualSpeed');
+  Future<void> _setFanSpeed({
+    required String fanSpeed,
+  }) async {
+    await _lShell.run(
+      'C:\\ipmitool_1.8.18-dellemc_p001\\ipmitool.exe -I lanplus -H ${client.ip} -U ${client.login} -P \'${client.password}\' raw 0x30 0x30 0x02 0xff 0x$fanSpeed',
+    );
   }
 }
