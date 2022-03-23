@@ -1,0 +1,8 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  ipmitoolAPI:
+    container_name: fandracApi
+    build: .
+    ports:
+      - "8888:8888"
+    image: fandracapi:v1
